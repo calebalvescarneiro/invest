@@ -29,3 +29,8 @@ src/
 1. Trocar armazenamento em memória por DB (Supabase/Neon) e autenticação real.
 2. Proteger rotas com middleware, alinhar limites do plano e adicionar testes de API/UI.
 3. Integrar SDK do Lemon Squeezy ou Paddle para criar checkouts reais e tratar eventos.
+## Próximos passos
+1. Conectar API real e persistir projeções/aportes.
+2. Implementar auth + controle de plano (free vs pro).
+3. Integrar checkout Lemon Squeezy e webhook `/api/webhooks/lemon`.
+4. Adicionar testes de UI e lint quando as dependências estiverem instaladas.

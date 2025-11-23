@@ -48,23 +48,20 @@ export default function Home() {
         <NotificationPrefs />
       </section>
 
-      <section className="grid gap-6 sm:grid-cols-2">
-        <PlanStatus />
-        <Card className="border-dashed bg-secondary/20">
-          <CardContent className="flex flex-wrap items-center justify-between gap-3 p-6">
-            <div>
-              <p className="text-sm font-semibold">Próximos passos</p>
-              <p className="text-sm text-muted-foreground">
-                Conectar API real, salvar projeções, registrar aportes e integrar webhooks de billing.
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="secondary">Adicionar auth</Button>
-              <Button>Configurar banco</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
+      <Card className="border-dashed bg-secondary/20">
+        <CardContent className="flex flex-wrap items-center justify-between gap-3 p-6">
+          <div>
+            <p className="text-sm font-semibold">Próximos passos</p>
+            <p className="text-sm text-muted-foreground">
+              Conectar API real, salvar projeções, registrar aportes e integrar webhooks de billing.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="secondary">Adicionar auth</Button>
+            <Button>Configurar banco</Button>
+          </div>
+        </CardContent>
+      </Card>
     </main>
   );
 }

@@ -1,113 +1,48 @@
-'use client';
-
-import { useEffect, useMemo, useState } from 'react';
 import { PieChart } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { createContribution, listContributions } from '@/lib/api';
 
-type Contribution = { id: string; amount: number; date: string; note?: string };
+const allocations = [
+  { label: 'Renda fixa', percent: 45, note: 'Tesouro Selic e CDBs pós' },
+  { label: 'FIIs', percent: 20, note: 'Renda passiva e diversificação' },
+  { label: 'ETFs', percent: 15, note: 'Exposição global simples' },
+  { label: 'Ações', percent: 15, note: 'Blue chips e setores defensivos' },
+  { label: 'Cripto', percent: 5, note: 'Limite claro para perfil moderado' },
+];
 
 export function PortfolioAllocation() {
-  const [contributions, setContributions] = useState<Contribution[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ amount: 500, date: new Date().toISOString().slice(0, 10), note: 'Aporte mensal' });
-
-  useEffect(() => {
-    const load = async () => {
-      const data = await listContributions();
-      setContributions(data.contributions);
-    };
-    void load();
-  }, []);
-
-  const totalAportes = useMemo(
-    () => contributions.reduce((acc, contribution) => acc + Number(contribution.amount || 0), 0),
-    [contributions],
-  );
-
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLoading(true);
-    await createContribution({
-      amount: Number(form.amount),
-      date: form.date,
-      note: form.note,
-    });
-    const data = await listContributions();
-    setContributions(data.contributions);
-    setLoading(false);
-  }
-
   return (
     <Card className="h-full">
       <CardHeader className="flex-row items-start justify-between">
         <div className="space-y-1">
-          <CardTitle>Distribuição da carteira</CardTitle>
-          <CardDescription>Persistência de aportes mensais e resumo por classe.</CardDescription>
+          <CardTitle>Alocação sugerida</CardTitle>
+          <CardDescription>
+            Limite por classe, rebalanceamento e registro manual de aportes.
+          </CardDescription>
         </div>
         <Badge className="flex items-center gap-1" variant="secondary">
           <PieChart className="h-4 w-4" />
-          Preferências do perfil
+          Carteira free: 1 carteira, 15 transações
         </Badge>
       </CardHeader>
-      <CardContent className="grid gap-6">
-        <div className="grid gap-4 sm:grid-cols-3">
-          <div className="rounded-lg border p-4">
-            <p className="text-sm text-muted-foreground">Aportes registrados</p>
-            <p className="text-2xl font-semibold">{contributions.length}</p>
-            <p className="text-xs text-muted-foreground">em memória via API</p>
+      <CardContent className="space-y-4">
+        {allocations.map((item) => (
+          <div key={item.label} className="grid items-center gap-2 sm:grid-cols-[1fr,120px,1fr]">
+            <p className="text-sm font-medium">{item.label}</p>
+            <div className="flex items-center gap-3">
+              <div className="h-2 w-full rounded-full bg-muted">
+                <div
+                  className="h-2 rounded-full bg-primary"
+                  style={{ width: `${item.percent}%` }}
+                  aria-hidden
+                />
+              </div>
+              <span className="text-sm font-semibold">{item.percent}%</span>
+            </div>
+            <p className="text-sm text-muted-foreground">{item.note}</p>
           </div>
-          <div className="rounded-lg border p-4">
-            <p className="text-sm text-muted-foreground">Total aportado</p>
-            <p className="text-2xl font-semibold">R$ {totalAportes.toLocaleString('pt-BR')}</p>
-            <p className="text-xs text-muted-foreground">soma das operações</p>
-          </div>
-          <div className="rounded-lg border p-4">
-            <p className="text-sm text-muted-foreground">Último aporte</p>
-            <p className="text-2xl font-semibold">
-              {contributions[0]?.date ? new Date(contributions[0].date).toLocaleDateString('pt-BR') : '—'}
-            </p>
-            <p className="text-xs text-muted-foreground">mantido no backend</p>
-          </div>
-        </div>
-
-        <div className="grid gap-3">
-          <p className="text-sm font-semibold">Registrar aporte</p>
-          <form onSubmit={handleSubmit} className="grid gap-3 sm:grid-cols-3">
-            <div className="space-y-2">
-              <Label htmlFor="amount">Valor (R$)</Label>
-              <Input
-                id="amount"
-                type="number"
-                value={form.amount}
-                onChange={(event) => setForm({ ...form, amount: Number(event.target.value) })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="date">Data</Label>
-              <Input
-                id="date"
-                type="date"
-                value={form.date}
-                onChange={(event) => setForm({ ...form, date: event.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="note">Nota</Label>
-              <Input id="note" value={form.note} onChange={(event) => setForm({ ...form, note: event.target.value })} />
-            </div>
-            <div className="sm:col-span-3 flex justify-end">
-              <Button type="submit" disabled={loading}>
-                {loading ? 'Salvando...' : 'Salvar aporte na API'}
-              </Button>
-            </div>
-          </form>
-        </div>
+        ))}
       </CardContent>
     </Card>
   );
