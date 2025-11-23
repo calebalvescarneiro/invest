@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CheckoutCta } from '@/features/billing/components/checkout-cta';
 import { LearningPath } from '@/features/education/components/learning-path';
+import { PlanStatus } from '@/features/auth/components/plan-status';
 import { GoalSummary } from '@/features/goals/components/goal-summary';
 import { NotificationPrefs } from '@/features/notifications/components/notification-prefs';
 import { OnboardingSteps } from '@/features/onboarding/components/onboarding-steps';
