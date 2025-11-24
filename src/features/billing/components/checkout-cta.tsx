@@ -1,5 +1,3 @@
-'use client';
-
 import { useState } from 'react';
 import { CreditCard, ShieldCheck } from 'lucide-react';
 
