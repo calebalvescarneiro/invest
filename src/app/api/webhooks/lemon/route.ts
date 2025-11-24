@@ -1,28 +1,27 @@
-import crypto from 'crypto';
-import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-import { upsertUserPlan } from '@/server/data-store';
-
-const DEFAULT_USER_ID = 'demo-user';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
 
 export async function POST(request: Request) {
-  const secret = process.env.LEMON_WEBHOOK_SECRET;
-  if (!secret) {
-    return NextResponse.json({ error: 'Webhook secret não configurado' }, { status: 500 });
+  const supabase = createSupabaseServerClient();
+  const payload = await request.json();
+
+  const paymentId = payload?.data?.id || payload?.paymentId;
+  const userId = payload?.data?.attributes?.user_id || payload?.userId;
+  const status = payload?.data?.attributes?.status || payload?.status || 'active';
+
+  if (!paymentId || !userId) {
+    return NextResponse.json({ error: 'Payload inválido' }, { status: 400 });
   }
 
-  const rawBody = await request.text();
-  const signature = headers().get('x-signature') || '';
-  const expected = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
+  await supabase.from('payments').upsert({ id: paymentId, user_id: userId, status });
 
-  if (signature !== expected) {
-    return NextResponse.json({ error: 'Assinatura inválida' }, { status: 401 });
+  if (status === 'paid' || status === 'active') {
+    await supabase
+      .from('profiles')
+      .update({ plan: 'pro', subscription_status: 'active' })
+      .eq('id', userId);
   }
-
-  const payload = JSON.parse(rawBody);
-  const status = payload?.data?.attributes?.status || 'active';
-  upsertUserPlan(DEFAULT_USER_ID, 'pro', status);
 
   return NextResponse.json({ received: true });
 }

@@ -8,7 +8,8 @@ export async function fetchJson<T>(url: string, options?: RequestInit): Promise<
   });
 
   if (!response.ok) {
-    throw new Error(`Request failed: ${response.status}`);
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error?.error || `Request failed: ${response.status}`);
   }
 
   return (await response.json()) as T;
@@ -21,7 +22,11 @@ export type Session = {
 };
 
 export async function getSession() {
-  return fetchJson<Session>('/api/auth');
+  try {
+    return await fetchJson<Session>('/api/auth');
+  } catch (error) {
+    return Promise.reject(error);
+  }
 }
 
 export async function updatePlan(plan: 'free' | 'pro', email?: string) {
@@ -68,8 +73,18 @@ export async function createContribution(payload: ContributionPayload) {
 }
 
 export async function createCheckout(returnUrl?: string) {
-  return fetchJson<{ checkoutUrl: string }>('/api/billing/checkout', {
+  return fetchJson<{ checkoutUrl: string; pix: { copyAndPaste: string; qrCode: string; expiresAt: string } }>(
+    '/api/billing/checkout',
+    {
+      method: 'POST',
+      body: JSON.stringify({ returnUrl }),
+    }
+  );
+}
+
+export async function signOut() {
+  return fetchJson('/api/auth', {
     method: 'POST',
-    body: JSON.stringify({ returnUrl }),
+    body: JSON.stringify({ action: 'sign-out' }),
   });
 }

@@ -1,22 +1,43 @@
+import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 
-import { getUser } from '@/server/data-store';
-
-const DEFAULT_USER_ID = 'demo-user';
+import { createSupabaseServerClient, getSessionProfile } from '@/lib/supabase/server';
 
 export async function POST(request: Request) {
-  const user = getUser(DEFAULT_USER_ID);
-  const body = await request.json();
+  const supabase = createSupabaseServerClient();
+  const { user, profile } = await getSessionProfile();
 
-  const storeId = process.env.LEMON_STORE_ID || 'store-xxxxx';
-  const variantId = process.env.LEMON_VARIANT_ID || 'variant-xxxxx';
-  const returnUrl = body.returnUrl || process.env.APP_URL || 'http://localhost:3000';
+  if (!user || !profile) {
+    return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+  }
 
-  const hostedUrl = `https://store.lemonsqueezy.com/checkout/buy/${variantId}?embed=1&checkout[custom][user_id]=${user.id}&checkout[email]=${encodeURIComponent(user.email)}&checkout[name]=${encodeURIComponent(user.name)}&checkout[success_url]=${encodeURIComponent(returnUrl)}`;
+  const payload = await request.json();
+  const redirectUrl = payload.returnUrl || process.env.APP_URL || 'http://localhost:3000';
+
+  const paymentId = crypto.randomUUID();
+  const pixPayload = `00020126360014BR.GOV.BCB.PIX0114+5511987654320520400005303986540540.005802BR5925Invest SaaS Pro Plan6009SAO PAULO62290525${paymentId}6304ABCD`;
+
+  await supabase
+    .from('payments')
+    .upsert({
+      id: paymentId,
+      user_id: user.id,
+      amount: payload.amount ?? 2900,
+      currency: 'BRL',
+      status: 'pending',
+      provider: 'pix-demo',
+      redirect_url: redirectUrl,
+    })
+    .select('id');
 
   return NextResponse.json({
-    checkoutUrl: hostedUrl,
-    storeId,
-    variantId,
+    paymentId,
+    checkoutUrl: redirectUrl,
+    pix: {
+      copyAndPaste: pixPayload,
+      qrCode: pixPayload,
+      expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+    },
+    plan: profile.plan,
   });
 }

@@ -16,7 +16,7 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": ["next", "next/types/global", "next/navigation-types/compat/navigation"]
+    "types": ["next", "next/types/global", "next/navigation-types/compat/navigation", "vitest/globals", "@testing-library/jest-dom"]
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]

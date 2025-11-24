@@ -2,12 +2,14 @@
 
 MVP do SaaS de planejamento de aportes e educação financeira. O projeto usa Next.js 14
 (App Router), TypeScript, TailwindCSS e componentes Shadcn para acelerar a entrega do
-web app com foco em monetização rápida via Lemon Squeezy.
+web app com foco em monetização rápida via Pix no Brasil com Supabase para auth e dados.
 
 ## Tech stack
 - Next.js 14 + TypeScript
 - TailwindCSS + design tokens do Shadcn UI
 - Estrutura orientada a features em `src/features`
+- Supabase (auth, Postgres, middleware) — configure `.env.local` com `NEXT_PUBLIC_SUPABASE_URL`,
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY` e idealmente `SUPABASE_SERVICE_ROLE_KEY`.
 
 ## Estrutura
 ```
@@ -19,18 +21,14 @@ src/
 ```
 
 ## API pronta no MVP
-- Auth e plano: `/api/auth` (GET para sessão demo, POST para simular upgrade/free).
-- Metas: `/api/goals` (GET/POST) com armazenamento em memória.
-- Aportes: `/api/contributions` (GET/POST) para registrar evolução mensal.
-- Billing: `/api/billing/checkout` para gerar link hosted do Lemon Squeezy.
-- Webhook: `/api/webhooks/lemon` valida HMAC e sobe usuário para Pro.
+- Auth e plano: `/api/auth` (Supabase Auth) retorna sessão, plano e status de cobrança.
+- Metas: `/api/goals` (GET/POST) usando Supabase Postgres com RLS.
+- Aportes: `/api/contributions` (GET/POST) para registrar evolução mensal no Supabase.
+- Billing: `/api/billing/checkout` gera payload Pix (placeholder) e salva pagamento.
+- Webhook: `/api/webhooks/lemon` aceita callbacks (Pix/pagamento) e promove para Pro.
 
 ## Próximos passos
-1. Trocar armazenamento em memória por DB (Supabase/Neon) e autenticação real.
-2. Proteger rotas com middleware, alinhar limites do plano e adicionar testes de API/UI.
-3. Integrar SDK do Lemon Squeezy ou Paddle para criar checkouts reais e tratar eventos.
-## Próximos passos
-1. Conectar API real e persistir projeções/aportes.
-2. Implementar auth + controle de plano (free vs pro).
-3. Integrar checkout Lemon Squeezy e webhook `/api/webhooks/lemon`.
-4. Adicionar testes de UI e lint quando as dependências estiverem instaladas.
+1. Configurar as tabelas `profiles`, `goals`, `contributions` e `payments` no Supabase (RLS com user_id).
+2. Criar usuários de teste no Supabase (email/senha) para usar o formulário de login.
+3. Integrar provedor de Pix (Pagar.me, Gerencianet etc.) e apontar o webhook para `/api/webhooks/lemon`.
+4. Rodar testes locais: `npm test` (Vitest) garante gating de plano e UI base.
